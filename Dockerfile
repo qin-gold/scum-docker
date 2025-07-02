@@ -30,7 +30,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive \
     WINEDEBUG=-all \
     WINEARCH=win64 \
-    WINEPREFIX=/opt/wine64 \
+    WINEPREFIX=/home/scumuser/.wine \
     SCUM_HOME=/opt/scumserver \
     SERVER_PORT=7777 \
     QUERY_PORT=27015 \
@@ -62,7 +62,8 @@ RUN dpkg --add-architecture i386 && \
 
 # 安装 SteamCMD
 COPY steamcmd_linux.tar.gz /opt/steamcmd/
-RUN cd /opt/steamcmd && tar zxvf steamcmd_linux.tar.gz && rm steamcmd_linux.tar.gz
+RUN cd /opt/steamcmd && tar zxvf steamcmd_linux.tar.gz && rm steamcmd_linux.tar.gz && \
+    chmod +x /opt/steamcmd/steamcmd.sh
 
 # 从构建阶段复制 jemalloc
 COPY --from=builder /opt/jemalloc /opt/jemalloc
@@ -79,7 +80,10 @@ COPY memory-monitor.sh /opt/memory-monitor.sh
 RUN chmod +x /opt/*.sh && \
     mkdir -p /opt/scumserver /opt/scumserver/logs && \
     useradd -m scumuser && \
-    chown -R scumuser:scumuser /opt/scumserver
+    chmod +x /opt/steamcmd/steamcmd.sh && \
+    chown -R scumuser:scumuser /opt/scumserver /opt/steamcmd && \
+    mkdir -p /home/scumuser/.wine && \
+    chown -R scumuser:scumuser /home/scumuser
 
 # 配置Wine注册表以优化内存使用
 RUN echo '[HKEY_CURRENT_USER\\Software\\Wine\\DllOverrides]' > /tmp/wine_memory.reg && \
